@@ -1,1 +1,0 @@
-Add MIT license, CI lint workflow, and docs (hardware, wiring, troubleshooting)
