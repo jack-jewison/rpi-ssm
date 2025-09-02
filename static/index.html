@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SPM Tracker</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:0;background:#0b1020;color:#e7ecf3}
+    header{padding:16px 20px;border-bottom:1px solid #1d2747;background:#0f1630;position:sticky;top:0}
+    main{max-width:1100px;margin:24px auto;padding:0 16px;display:grid;gap:16px;grid-template-columns:1fr 340px}
+    .card{background:#111938;border:1px solid #1b2650;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+    .card h2{margin:0;padding:14px 16px;border-bottom:1px solid #1b2650}
+    .card .content{padding:16px}
+    .badge{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid #2a3a78}
+    .ok{background:#0b3d2e}
+    .bad{background:#5b1420}
+    .btn{cursor:pointer;border:1px solid #2a3a78;background:#0d1b3a;color:#e7ecf3;padding:10px 14px;border-radius:12px}
+    .btn:active{transform:translateY(1px)}
+    img.stream{width:100%;border-bottom-left-radius:16px;border-bottom-right-radius:16px}
+    .kv{display:grid;grid-template-columns:140px 1fr;gap:6px 8px}
+    footer{opacity:.6;text-align:center;margin:24px}
+    a{color:#9fbaff}
+  </style>
+</head>
+<body>
+  <header>
+    <strong>SPM Tracker</strong>
+  </header>
+  <main>
+    <section class="card" style="grid-column:1/2">
+      <h2>Live</h2>
+      <img class="stream" src="/stream.mjpg" alt="Live stream" />
+    </section>
+
+    <aside class="card" style="grid-column:2/3">
+      <h2>Status</h2>
+      <div class="content">
+        <div class="kv">
+          <div>SPM</div><div id="spm">—</div>
+          <div>Last Pulse</div><div id="last">—</div>
+          <div>Twine</div><div id="twine" class="badge">—</div>
+          <div>Moisture</div><div id="moist" class="badge">—</div>
+          <div>Capture</div><div id="cap" class="badge">—</div>
+        </div>
+        <div style="height:12px"></div>
+        <button class="btn" id="toggle">Toggle Capture</button>
+        <a class="btn" href="/snapshot.jpg" style="margin-left:8px">Snapshot</a>
+      </div>
+    </aside>
+  </main>
+  <footer>Saved images → <code>~/spm_captures/</code></footer>
+
+<script>
+async function refresh(){
+  try{
+    const r = await fetch('/status');
+    const j = await r.json();
+    document.getElementById('spm').textContent = j.spm.toFixed(1);
+    document.getElementById('last').textContent = (j.last_pulse_age_sec==null? '—' : (j.last_pulse_age_sec.toFixed(1)+'s ago'));
+    const tw = document.getElementById('twine');
+    tw.textContent = j.twine_tripped? 'TRIPPED' : 'OK';
+    tw.className = 'badge ' + (j.twine_tripped? 'bad':'ok');
+    const mo = document.getElementById('moist');
+    mo.textContent = j.moisture_wet? 'WET' : 'DRY';
+    mo.className = 'badge ' + (j.moisture_wet? 'bad':'ok');
+    const cp = document.getElementById('cap');
+    cp.textContent = j.capture_enabled? 'ENABLED' : 'DISABLED';
+    cp.className = 'badge ' + (j.capture_enabled? 'ok':'bad');
+  }catch(e){console.error(e)}
+}
+
+setInterval(refresh, 750);
+refresh();
+
+document.getElementById('toggle').addEventListener('click', async ()=>{
+  await fetch('/toggle_capture',{method:'POST'});
+  refresh();
+});
+</script>
+</body>
+</html>

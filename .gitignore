@@ -1,0 +1,6 @@
+.venv/
+__pycache__/
+*.pyc
+spm_captures/
+.env
+.DS_Store

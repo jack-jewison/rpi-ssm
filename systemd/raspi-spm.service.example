@@ -1,0 +1,14 @@
+[Unit]
+Description=Raspberry Pi SPM Tracker (example)
+After=network-online.target pigpiod.service
+Wants=network-online.target
+
+[Service]
+User=pi
+WorkingDirectory=/home/pi/raspi-spm
+ExecStart=/home/pi/raspi-spm/.venv/bin/uvicorn app:app --host 0.0.0.0 --port 8000
+Restart=always
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
